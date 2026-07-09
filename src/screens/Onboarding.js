@@ -1,15 +1,18 @@
 
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import InputText from '../components/InputText';
 import { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Onboarding() {
+export default function Onboarding({ navigation }) {
   const [firstName, setFirstName] = useState('')
   const [isFirstNameValid, setIsFirstNameValid] = useState(false)
   const [firstNameError, setFirstNameError] = useState('')
   const [email, setEmail] = useState('')
   const [isEmailValid, setIsEmailValid] = useState(false)
   const [emailError, setEmailError] = useState('')
+
+  const storage = AsyncStorage;
 
   const handleFirstNameChange = (value) => {
     setFirstName(value)
@@ -51,13 +54,15 @@ export default function Onboarding() {
     setIsEmailValid(true);
   }
 
-  const handleNext = () => {
-    console.log('Next pressed');
-    alert(`hi ${firstName}`)
+  const handleNext = async () => {
+    await storage.setItem('user', JSON.stringify({ firstName, email }));
+    await storage.setItem('onboardingCompleted', true);
+
+    navigation.navigate('Profile')
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Image style={styles.image} source={require('../../assets/images/header-logo.png')} />
       </View>
@@ -101,7 +106,7 @@ export default function Onboarding() {
       >
         <Text style={styles.buttonText}>Next</Text>
       </Pressable>
-    </View>
+    </SafeAreaView>
   );
 }
 
