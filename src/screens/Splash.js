@@ -1,6 +1,6 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 
-const Splash = () => {
+export default function Splash() {
     return (
         <View style={styles.container}>
             <Image source={require('../../assets/images/header-logo.png')} />
@@ -16,5 +16,3 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
 })
-
-export default Splash

@@ -1,10 +1,11 @@
 
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { theme } from '../theme';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Onboarding({ navigation }) {
+export default function Onboarding({ navigation, checkOnboardingCompleted }) {
   const [firstName, setFirstName] = useState('')
   const [isFirstNameValid, setIsFirstNameValid] = useState(false)
   const [firstNameError, setFirstNameError] = useState('')
@@ -56,15 +57,14 @@ export default function Onboarding({ navigation }) {
 
   const handleNext = async () => {
     await storage.setItem('user', JSON.stringify({ firstName, email }));
-    await storage.setItem('onboardingCompleted', true);
-
-    navigation.navigate('Profile')
+    await storage.setItem('onboardingCompleted', 'true');
+    checkOnboardingCompleted();
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Image style={styles.image} source={require('../../assets/images/header-logo.png')} />
+        <Image style={styles.image} source={require('../../assets/images/header-logo.jpg')} />
       </View>
       <View style={styles.form}>
         <Text style={styles.formTitle}>Let us get to know you.</Text>
@@ -113,7 +113,7 @@ export default function Onboarding({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.highlightLight,
   },
   header: {
     width: '100%',
@@ -125,19 +125,20 @@ const styles = StyleSheet.create({
     width: '100%',
     flex: .9,
     alignItems: 'center',
-    justifyContent: 'top',
+    justifyContent: 'flex-start',
   },
   formTitle: {
     fontSize: 24,
     textAlign: 'center',
     fontWeight: 'bold',
-    fontFamily: 'Karla-Regular',
+    fontFamily: theme.fonts.regular,
     paddingVertical: 40 ,
     marginBottom: 60,
   },
   image: {
     height: 80,
-    width: '90%',
+    width: '80%',
+    resizeMode: 'contain',
   },
   button: {
     color: 'black',
@@ -145,17 +146,17 @@ const styles = StyleSheet.create({
     height: 60,
     justifyContent: 'center',
     alignSelf: 'flex-end',
-    backgroundColor: '#5658e8ff',
+    backgroundColor: theme.colors.primary1,
     borderRadius: 12,
     marginRight: '10%',
     marginTop: 40,
 
   },
   buttonText: {
-    color: 'white',
+    color: theme.colors.highlightLight,
     fontSize: 24,
     fontWeight: 'bold',
-    fontFamily: 'Karla-Regular',
+    fontFamily: theme.fonts.regular,
     textAlign: 'center',
   },
   inputContainer: {
@@ -166,8 +167,8 @@ const styles = StyleSheet.create({
   inputTitle: {
     fontSize: 24,
     textAlign: 'center',
-    fontWeight: 'semibold',
-    fontFamily: 'Karla-Regular',
+    fontWeight: 600,
+    fontFamily: theme.fonts.regular,
     paddingVertical: 10,
     },
   input: {
@@ -177,9 +178,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   errorText: {
-    color: 'red',
+    color: theme.colors.error,
     fontSize: 16,
-    fontFamily: 'Karla-Regular',
+    fontFamily: theme.fonts.regular,
     marginTop: 10,
   },
 })

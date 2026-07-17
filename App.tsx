@@ -5,21 +5,24 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
+import { useFonts } from 'expo-font';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [authState, setAuthState] = useState('loading');
-
-  const storage = AsyncStorage;
+  const [fontsLoaded] = useFonts({
+    'Karla-Regular': require('./assets/fonts/Karla-Regular.ttf'),
+    'MarkaziText-Regular': require('./assets/fonts/MarkaziText-Regular.ttf'),
+  });
 
   useEffect(() => {
-    checkOnboardingCompleted();    
+    checkOnboardingCompleted();
   }, []);
 
   async function checkOnboardingCompleted() {
-    const onboardingCompleted = await storage.getItem('onboardingCompleted');
-    if (onboardingCompleted) {
+    const onboardingCompleted = await AsyncStorage.getItem('onboardingCompleted');
+    if (onboardingCompleted === 'true') {
       setAuthState('onboarding-completed');
     } else {
       setAuthState('onboarding');
@@ -34,9 +37,13 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator>
         {authState === 'onboarding-completed' ? (
-          <Stack.Screen name="Profile" component={Profile}/>
+          <Stack.Screen name="Profile" options={{ headerShown: false }}>
+            {(props) => <Profile {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}
+          </Stack.Screen>
         ) : (
-          <Stack.Screen name="Onboarding" component={Onboarding}/>
+          <Stack.Screen name="Onboarding" options={{ headerShown: false }}>
+            {(props) => <Onboarding {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}
+          </Stack.Screen>
         )}
       </Stack.Navigator>
     </NavigationContainer>
