@@ -6,6 +6,7 @@ import LetterIcon from "../components/LetterIcon";
 import { useEffect, useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
 import Icon from "react-native-vector-icons/Ionicons";
+import Header from "../components/Header";
 
 export default function Profile({ navigation, checkOnboardingCompleted }) {
     const [avatarUri, setAvatarUri] = useState(null);
@@ -185,15 +186,13 @@ export default function Profile({ navigation, checkOnboardingCompleted }) {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
-            <View style={styles.header}>
-                <Icon name="caret-back-circle" size={44} color={theme.colors.primary1} onPress={() => {}} />
-                <Image style={styles.image} source={require('../../assets/images/header-logo.jpg')} />
-                {avatarUri ? (
-                    <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
-                ) : (
-                    <LetterIcon firstName={firstName} lastName={lastName} />
-                )}
-            </View>
+            <Header
+                firstName={firstName}
+                lastName={lastName}
+                avatarUri={avatarUri}
+                navigation={navigation}
+                showBackButton={true}
+            />
             <View style={styles.content}>
                 <Text style={styles.contentTitle}>Personal Information</Text>
                 <View style={styles.userInfo}>

@@ -4,6 +4,7 @@ import { theme } from '../theme';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Header from '@/components/Header';
 
 export default function Onboarding({ navigation, checkOnboardingCompleted }) {
   const [firstName, setFirstName] = useState('')
@@ -63,9 +64,13 @@ export default function Onboarding({ navigation, checkOnboardingCompleted }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Image style={styles.image} source={require('../../assets/images/header-logo.jpg')} />
-      </View>
+      <Header 
+        firstName={firstName || ""}
+        lastName={""}
+        avatarUri={""}
+        navigation={navigation}
+        showBackButton={false}
+      />
       <View style={styles.form}>
         <Text style={styles.formTitle}>Let us get to know you.</Text>
         <View style={styles.inputContainer}>

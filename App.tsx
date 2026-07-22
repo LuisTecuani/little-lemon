@@ -1,6 +1,7 @@
 import Onboarding from "@/screens/Onboarding";
 import Splash from "@/screens/Splash";
 import Profile from "@/screens/Profile";
+import Home from "@/screens/Home";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -35,12 +36,16 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        {authState === 'onboarding-completed' ? (
+      <Stack.Navigator initialRouteName={authState === 'onboarding-completed' ? 'Home' : 'Onboarding'}>
+        {authState === 'onboarding-completed' &&
           <Stack.Screen name="Profile" options={{ headerShown: false }}>
             {(props) => <Profile {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}
-          </Stack.Screen>
-        ) : (
+          </Stack.Screen>}
+        {authState === 'onboarding-completed' &&
+          <Stack.Screen name="Home" options={{ headerShown: false }}>
+            {(props) => <Home {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}
+          </Stack.Screen>}
+        {authState !== 'onboarding-completed' && (
           <Stack.Screen name="Onboarding" options={{ headerShown: false }}>
             {(props) => <Onboarding {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}
           </Stack.Screen>
