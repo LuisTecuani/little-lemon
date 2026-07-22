@@ -1,17 +1,30 @@
-import { View, Text, StyleSheet, Image, FlatList, Pressable } from "react-native";
+import { View, Text, StyleSheet, Image, FlatList, Pressable, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { theme } from "../theme";
 import Header from "../components/Header";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/Ionicons";
-import { createTable, getMenuItems, saveMenuItems } from "../infrastructure/database";
+import { createTable, getMenuItems, saveMenuItems, findByCategories, findBySearchTerm } from "../infrastructure/database";
 
 export default function Home({ navigation, checkOnboardingCompleted }) {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [avatarUri, setAvatarUri] = useState('');
     const [menu, setMenu] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [toggleCategories, setToggleCategories] = useState({
+        starters: false,
+        mains: false,
+        desserts: false,
+        drinks: false,
+    });
+
+    const handleToggle = (category) => {
+        setToggleCategories(prevStates => ({...prevStates, [category]: !prevStates[category]}));
+    }
+
+    const categories = ['starters', 'mains', 'desserts', 'drinks'];
 
     const storage = AsyncStorage;
     
@@ -20,7 +33,7 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
     }, []);
 
     useEffect(() => {
-        (async () => {
+        const fetchInitialData = async () => {
             try {
                 await createTable();
                 let menuItems = await getMenuItems();
@@ -33,11 +46,23 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
                     setMenu(menuItems);
                 }
             } catch (error) {
-                Alert.alert(error.message);
+                console.log(error);
             }
-        })()
+        };
+        fetchInitialData();
     }, []);
-        
+    
+    useEffect(() => {
+        const updateMenu = async () => {
+            let activeCategories = Object.keys(toggleCategories).filter(category => toggleCategories[category]);
+            if (activeCategories.length === 0) {
+                activeCategories = [];
+            }
+            const updatedMenu = await findByCategories([...activeCategories]);
+            setMenu(updatedMenu);
+        };
+        updateMenu();
+    }, [toggleCategories]);
 
     async function getUser() {
         const user = await storage.getItem('user');
@@ -59,6 +84,16 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
         }
     }
 
+    function handleSearchChange(text) {
+        setSearchTerm(text);
+    }
+
+    const handleSearchBlur = async () => {
+        await setToggleCategories({starters: false, mains: false, desserts: false, drinks: false});
+        const updatedMenu = await findBySearchTerm(searchTerm);
+        setMenu(updatedMenu);
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <Header firstName={firstName} lastName={lastName} avatarUri={avatarUri} navigation={navigation} />
@@ -74,24 +109,44 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
                     <Image source={require('../../assets/images/hero-image.png')} resizeMode="cover" style={styles.image} />
                 </View>
                 <View style={styles.search}>
-                    <Icon name="search-circle" size={50} color={theme.colors.highlightLight} style={styles.searchIcon} />
+                    <Icon name="search" size={35} color={theme.colors.highlightDark} style={styles.searchIcon} />
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search"
+                        placeholderTextColor={theme.colors.highlightLight}
+                        value={searchTerm}
+                        onChangeText={handleSearchChange}
+                        onBlur={handleSearchBlur}
+                    />
                 </View>
             </View>
             <View style={styles.deliveryBlock}>
                 <Text style={styles.deliveryText}>ORDER FOR DELIVERY!</Text>
                 <View style={styles.categoryFilter}>
-                    <Pressable style={styles.categoryBtn}>
-                        <Text>Starters</Text>
-                    </Pressable>
-                    <Pressable style={styles.categoryBtn}>
-                        <Text>Mains</Text>
-                    </Pressable>
-                    <Pressable style={styles.categoryBtn}>
-                        <Text>Desserts</Text>
-                    </Pressable>
-                    <Pressable style={styles.categoryBtn}>
-                        <Text>Drinks</Text>
-                    </Pressable>
+                    {categories.map(category => {
+                        const isActive = toggleCategories[category];
+                        
+                        return (
+                        <Pressable 
+                            key={category}
+                            onPress={() => handleToggle(category)}
+                            style={({pressed}) => [
+                                styles.buttonBase,
+                                isActive ? styles.categoryBtnActive : styles.categoryBtnInactive
+                            ]}
+                        >
+                            {({pressed}) => (
+                                <Text 
+                                style={[
+                                    styles.textBase,
+                                    isActive ? styles.textActive : styles.textInactive
+                                ]}
+                                >
+                                    {category.toUpperCase()}
+                                </Text>
+                            )}
+                        </Pressable>
+                    )})}
                 </View>
             </View>
             <View style={styles.menuContainer}>
@@ -111,8 +166,6 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
                     )}
                     keyExtractor={item => item.name}
                     ItemSeparatorComponent={() => <View style={styles.menuSeparator} />}
-                    
-
                 />
             </View>
 
@@ -127,7 +180,7 @@ const styles = StyleSheet.create({
     },
     aboutBlock: {
         backgroundColor: theme.colors.primary1,
-        paddingVertical: 10,
+        paddingBottom: 6,
         paddingHorizontal: 10,
     },
     aboutTitle: {
@@ -147,7 +200,7 @@ const styles = StyleSheet.create({
         fontFamily: theme.fonts.regular,
         color: theme.colors.highlightLight,
         textAlign: 'left',
-        marginTop: 10,
+        marginTop: 8,
     },
     heroBlock: {
         width: '100%',
@@ -158,18 +211,33 @@ const styles = StyleSheet.create({
     },
     aboutTexts: {
         width: '65%',
+        marginTop: -28,
     },
     image: {
-        height: '100%',
+        height: '90%',
         width: '35%',
         borderRadius: 10,
     },
     search: {
+        marginTop: 10,
+        alignSelf: 'center',
         alignItems: 'flex-start',
+        flexDirection: 'row',
+        backgroundColor: theme.colors.highlightLight,
+        paddingHorizontal: 10,
+        height: 45,
+        borderRadius: 16,
+        width: '90%',
     },
     searchIcon: {
-        marginTop: 10,
-        paddingLeft: 20,
+        alignSelf: 'center',
+    },
+    searchInput: {
+        height: '100%',
+        width: '80%',
+        alignSelf: 'center',
+        fontFamily: theme.fonts.regular,
+        fontSize: 22,
     },
     deliveryBlock: {
         backgroundColor: theme.colors.highlightLight,
@@ -189,11 +257,29 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginTop: 10,
     },
-    categoryBtn: {
-        backgroundColor: theme.colors.secondary2,
+    buttonBase: {
+        paddingHorizontal: 8,
+        paddingVertical: 6,
         borderRadius: 16,
-        paddingVertical: 10,
-        paddingHorizontal: 10,
+    },
+    categoryBtnInactive: {
+        backgroundColor: theme.colors.secondary2,
+    },
+    categoryBtnActive: {
+        backgroundColor: theme.colors.primary1,
+    },
+    textBase: {
+        fontSize: 16,
+        fontFamily: theme.fonts.regular,
+        color: theme.colors.highlightDark,
+        textAlign: 'left',
+        fontWeight: 500,
+    },
+    textActive: {
+        color: theme.colors.primary2,
+    },
+    textInactive: {
+        color: theme.colors.highlightDark,
     },
     menuContainer: {
         flex: 1,

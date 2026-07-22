@@ -28,3 +28,20 @@ export async function saveMenuItems(menu) {
     }));
     console.log('Menu saved');
 }
+
+export async function findByCategories(categories) {
+    if (categories.length === 0) {
+        return await getMenuItems();
+    }
+    const placeholders = categories.map(() => '?').join(',');
+    const query = `SELECT * FROM menu WHERE category IN (${placeholders})`;
+    return await db.getAllAsync(query, categories);
+}
+
+export async function findBySearchTerm(searchTerm) {
+    if (!searchTerm || searchTerm.trim() === '') {
+        return await getMenuItems();
+    }
+    return await db.getAllAsync('SELECT * FROM menu WHERE name LIKE ?', [`%${searchTerm}%`]);
+}
+
