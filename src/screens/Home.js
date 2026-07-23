@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Image, FlatList, Pressable, TextInput } from "r
 import { SafeAreaView } from "react-native-safe-area-context";
 import { theme } from "../theme";
 import Header from "../components/Header";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/Ionicons";
 import { createTable, getMenuItems, saveMenuItems, findByCategories, findBySearchTerm } from "../infrastructure/database";
@@ -13,6 +13,7 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
     const [avatarUri, setAvatarUri] = useState('');
     const [menu, setMenu] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const isInitialMount = useRef(true);
     const [toggleCategories, setToggleCategories] = useState({
         starters: false,
         mains: false,
@@ -21,6 +22,7 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
     });
 
     const handleToggle = (category) => {
+        setSearchTerm('');
         setToggleCategories(prevStates => ({...prevStates, [category]: !prevStates[category]}));
     }
 
@@ -29,30 +31,18 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
     const storage = AsyncStorage;
     
     useEffect(() => {
-        getUser();
-    }, []);
-
-    useEffect(() => {
-        const fetchInitialData = async () => {
-            try {
-                await createTable();
-                let menuItems = await getMenuItems();
-                if (!menuItems || menuItems.length === 0) {
-                    const fetchedItems = await fetchMenu();
-                    await saveMenuItems(fetchedItems);
-                    menuItems = await getMenuItems();
-                    setMenu(menuItems);
-                } else {
-                    setMenu(menuItems);
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        };
         fetchInitialData();
+        getUser();
     }, []);
     
     useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+        if (searchTerm.trim() !== '') {
+            return;
+        }
         const updateMenu = async () => {
             let activeCategories = Object.keys(toggleCategories).filter(category => toggleCategories[category]);
             if (activeCategories.length === 0) {
@@ -72,6 +62,23 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
         setAvatarUri(avatarUri || '');
     }
 
+    const fetchInitialData = async () => {
+            try {
+                await createTable();
+                let menuItems = await getMenuItems();
+                if (!menuItems || menuItems.length === 0) {
+                    const fetchedItems = await fetchMenu();
+                    await saveMenuItems(fetchedItems);
+                    menuItems = await getMenuItems();
+                    setMenu(menuItems);
+                } else {
+                    setMenu(menuItems);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
     async function fetchMenu() {
         try {
             const response = await fetch('https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/capstone.json')
@@ -89,7 +96,7 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
     }
 
     const handleSearchBlur = async () => {
-        await setToggleCategories({starters: false, mains: false, desserts: false, drinks: false});
+        setToggleCategories({starters: false, mains: false, desserts: false, drinks: false});
         const updatedMenu = await findBySearchTerm(searchTerm);
         setMenu(updatedMenu);
     }
@@ -125,7 +132,6 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
                 <View style={styles.categoryFilter}>
                     {categories.map(category => {
                         const isActive = toggleCategories[category];
-                        
                         return (
                         <Pressable 
                             key={category}
@@ -168,7 +174,6 @@ export default function Home({ navigation, checkOnboardingCompleted }) {
                     ItemSeparatorComponent={() => <View style={styles.menuSeparator} />}
                 />
             </View>
-
         </SafeAreaView>
     );
 }
@@ -273,7 +278,7 @@ const styles = StyleSheet.create({
         fontFamily: theme.fonts.regular,
         color: theme.colors.highlightDark,
         textAlign: 'left',
-        fontWeight: 500,
+        fontWeight: '500',
     },
     textActive: {
         color: theme.colors.primary2,
@@ -322,7 +327,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontFamily: theme.fonts.regular,
         color: theme.colors.highlightDark,
-        fontWeight: 500,
+        fontWeight: '500',
         textAlign: 'left',
         marginTop: 10,
     },

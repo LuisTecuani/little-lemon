@@ -61,11 +61,8 @@ export default function Profile({ navigation, checkOnboardingCompleted }) {
     }
 
     const handleAvatarClick = async () => {
-        console.log('Avatar clicked');
         const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        console.log('permission', permission);
         if (permission.status !== 'granted') {
-            console.log('permission denied');
             return;
         }
 
@@ -75,7 +72,6 @@ export default function Profile({ navigation, checkOnboardingCompleted }) {
             quality: 1,
             cropShape: 'oval'
         });
-        console.log('result', result);
 
         if (!result.canceled) {
             setAvatarUri(result.assets[0].uri);
@@ -114,7 +110,6 @@ export default function Profile({ navigation, checkOnboardingCompleted }) {
             setFirstNameError('First name is invalid');
             setIsFirstNameValid(false);
         } else {
-            console.log('First name is valid');
             setFirstNameError('');
             setIsFirstNameValid(true);
         }
@@ -127,7 +122,6 @@ export default function Profile({ navigation, checkOnboardingCompleted }) {
             setLastNameError('Last name is invalid');
             setIsLastNameValid(false);
         } else {
-            console.log('Last name is valid');
             setLastNameError('');
             setIsLastNameValid(true);
         }
@@ -142,7 +136,6 @@ export default function Profile({ navigation, checkOnboardingCompleted }) {
             setEmailError('Email is invalid');
             setIsEmailValid(false);
         } else {
-            console.log('Email is valid');
             setEmailError('');
             setIsEmailValid(true);
     }
@@ -156,14 +149,12 @@ export default function Profile({ navigation, checkOnboardingCompleted }) {
             setPhoneNumberError('Phone number is invalid');
             setIsPhoneNumberValid(false);
         } else {
-            console.log('Phone number is valid');
             setPhoneNumberError('');
             setIsPhoneNumberValid(true);
         }
     };
 
     const handleSave = async () => {
-        console.log('Saving user...');
         await storage.setItem('user', JSON.stringify({ 
             avatarUri, 
             firstName, 
@@ -175,6 +166,18 @@ export default function Profile({ navigation, checkOnboardingCompleted }) {
             specialOffers,
             newsletter,
         }));
+    };
+
+    const handleDiscardChanges = () => {
+        getUser();
+        setFirstNameError('');
+        setLastNameError('');
+        setEmailError('');
+        setPhoneNumberError('');
+        setIsFirstNameValid(true);
+        setIsLastNameValid(true);
+        setIsEmailValid(true);
+        setIsPhoneNumberValid(true);
     };
 
     const handleLogout = async () => {
@@ -324,7 +327,7 @@ export default function Profile({ navigation, checkOnboardingCompleted }) {
                     >
                         <Text style={styles.saveButtonText}>Save changes</Text>
                     </Pressable>
-                    <Pressable style={styles.discardButton} onPress={getUser}>
+                    <Pressable style={styles.discardButton} onPress={handleDiscardChanges}>
                         <Text style={styles.discardButtonText}>Discard Changes</Text>
                     </Pressable>
                 </View>
@@ -466,7 +469,6 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     logoutButton: {
-        color: theme.colors.highlightDark,
         width: '90%',
         height: 40,
         justifyContent: 'center',
@@ -478,21 +480,21 @@ const styles = StyleSheet.create({
     saveButtonText: {
         color: theme.colors.highlightLight,
         fontSize: 16,
-        fontWeight: 700,
+        fontWeight: '700',
         fontFamily: theme.fonts.regular,
         textAlign: 'center',
     },
     discardButtonText: {
         color: theme.colors.primary1,
         fontSize: 16,
-        fontWeight: 700,
+        fontWeight: '700',
         fontFamily: theme.fonts.regular,
         textAlign: 'center',
     },
     logoutButtonText: {
         color: theme.colors.highlightDark,
         fontSize: 16,
-        fontWeight: 700,
+        fontWeight: '700',
         fontFamily: theme.fonts.regular,
         textAlign: 'center',
     },
@@ -504,7 +506,7 @@ const styles = StyleSheet.create({
     inputTitle: {
         fontSize: 24,
         textAlign: 'center',
-        fontWeight: 600,
+        fontWeight: '600',
         fontFamily: theme.fonts.regular,
         paddingVertical: 10,
         },

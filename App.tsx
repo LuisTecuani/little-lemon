@@ -12,14 +12,19 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [authState, setAuthState] = useState('loading');
-  const [fontsLoaded] = useFonts({
-    'Karla-Regular': require('./assets/fonts/Karla-Regular.ttf'),
-    'MarkaziText-Regular': require('./assets/fonts/MarkaziText-Regular.ttf'),
-  });
+  
 
   useEffect(() => {
+    loadFonts();
     checkOnboardingCompleted();
   }, []);
+
+  const loadFonts = async () => {
+    await useFonts({
+      'Karla-Regular': require('./assets/fonts/Karla-Regular.ttf'),
+      'MarkaziText-Regular': require('./assets/fonts/MarkaziText-Regular.ttf'),
+    });
+  }
 
   async function checkOnboardingCompleted() {
     const onboardingCompleted = await AsyncStorage.getItem('onboardingCompleted');
@@ -38,13 +43,14 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName={authState === 'onboarding-completed' ? 'Home' : 'Onboarding'}>
         {authState === 'onboarding-completed' &&
-          <Stack.Screen name="Profile" options={{ headerShown: false }}>
-            {(props) => <Profile {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}
-          </Stack.Screen>}
-        {authState === 'onboarding-completed' &&
-          <Stack.Screen name="Home" options={{ headerShown: false }}>
-            {(props) => <Home {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}
-          </Stack.Screen>}
+          (<>
+            <Stack.Screen name="Home" options={{ headerShown: false }}>
+              {(props) => <Home {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}
+            </Stack.Screen>
+            <Stack.Screen name="Profile" options={{ headerShown: false }}>
+              {(props) => <Profile {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}
+            </Stack.Screen>
+          </>)}
         {authState !== 'onboarding-completed' && (
           <Stack.Screen name="Onboarding" options={{ headerShown: false }}>
             {(props) => <Onboarding {...props} checkOnboardingCompleted={checkOnboardingCompleted} />}

@@ -3,7 +3,7 @@ import * as SQLite from 'expo-sqlite';
 const db = SQLite.openDatabaseSync('little_lemon');
 
 export async function createTable() {
-    db.execAsync(`
+    await db.execAsync(`
         CREATE TABLE IF NOT EXISTS menu (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
             name TEXT, 

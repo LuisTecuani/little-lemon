@@ -146,7 +146,6 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   button: {
-    color: 'black',
     width: 100,
     height: 60,
     justifyContent: 'center',
@@ -172,7 +171,7 @@ const styles = StyleSheet.create({
   inputTitle: {
     fontSize: 24,
     textAlign: 'center',
-    fontWeight: 600,
+    fontWeight: '600',
     fontFamily: theme.fonts.regular,
     paddingVertical: 10,
     },
