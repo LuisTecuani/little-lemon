@@ -7,7 +7,7 @@ export default function Header({firstName, lastName, avatarUri, navigation, show
     return (
         <View style={styles.container}>
             {showBackButton && <Icon name="caret-back-circle" size={44} color={theme.colors.primary1} onPress={() => {navigation.navigate('Home')}} />}
-            <Image style={styles.image} resizeMode="contain" source={require('../../assets/images/header-logo.jpg')} />
+            <Image style={styles.image} resizeMode="contain" source={require('../../assets/images/header-logo.png')} />
             {avatarUri ? (
                 <Pressable onPress={() => {navigation.navigate('Profile')}}><Image source={{ uri: avatarUri }} style={styles.avatarImage} /></Pressable>
             ) : (
